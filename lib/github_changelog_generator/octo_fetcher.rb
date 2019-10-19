@@ -335,6 +335,25 @@ Make sure, that you push tags to remote repo via 'git push --tags'"
       nil
     end
 
+    # Fetch detail for specified tag
+    #
+    # @param [Hash] GitHub data item about a Tag
+    # @return [Hash] GitHub data item about a Tag
+    def fetch_detail_of_tag(tag)
+      check_github_response do
+        ref_param = "tags/#{tag['name']}"
+        ref = @client.ref(user_project, ref_param)
+        ref = ref.to_hash
+        sha = ref.dig(:object, :sha)
+
+        details = @client.tag(user_project, sha)
+        stringify_keys_deep(details.to_hash)
+      end
+    rescue Octokit::NotFound
+      puts "Warning: Can't fetch tag details #{tag['name']}."
+      {}
+    end
+
     private
 
     def stringify_keys_deep(indata)

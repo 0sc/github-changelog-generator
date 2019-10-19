@@ -27,15 +27,16 @@ module GitHubChangelogGenerator
     # @param [String] newer_tag_name Name of the newer tag. Could be nil for `Unreleased` section.
     # @param [String] newer_tag_link Name of the newer tag. Could be "HEAD" for `Unreleased` section.
     # @param [Time] newer_tag_time Time of the newer tag
-    # @param [Hash, nil] older_tag_name Older tag, used for the links. Could be nil for last tag.
+    # @param [String] new_tag_desc Description of the newer tag. Could be empty.
+    # @param [String] older_tag_name Older tag, used for the links. Could be nil for last tag.
     # @return [String] Ready and parsed section content.
-    def generate_entry_for_tag(pull_requests, issues, newer_tag_name, newer_tag_link, newer_tag_time, older_tag_name) # rubocop:disable Metrics/ParameterLists
+    def generate_entry_for_tag(pull_requests, issues, newer_tag_name, newer_tag_link, newer_tag_time, newer_tag_desc, older_tag_name) # rubocop:disable Metrics/ParameterLists
       github_site = @options[:github_site] || "https://github.com"
       project_url = "#{github_site}/#{@options[:user]}/#{@options[:project]}"
 
       create_sections
 
-      @content = generate_header(newer_tag_name, newer_tag_link, newer_tag_time, older_tag_name, project_url)
+      @content = generate_header(newer_tag_name, newer_tag_link, newer_tag_time, newer_tag_desc, older_tag_name, project_url)
       @content += generate_body(pull_requests, issues)
       @content
     end
@@ -84,7 +85,7 @@ module GitHubChangelogGenerator
     # @param [String] older_tag_name The name of an older tag; used for URLs.
     # @param [String] project_url URL for the current project.
     # @return [String] Header text content.
-    def generate_header(newer_tag_name, newer_tag_link, newer_tag_time, older_tag_name, project_url)
+    def generate_header(newer_tag_name, newer_tag_link, newer_tag_time, newer_tag_desc, older_tag_name, project_url)
       header = ""
 
       # Generate date string:
@@ -101,6 +102,11 @@ module GitHubChangelogGenerator
                 else
                   "## [#{newer_tag_name}](#{release_url}) (#{time_string})\n\n"
                 end
+      if newer_tag_desc != ""
+        header += "**Description:**\n\n"
+        header += newer_tag_desc
+        header += "\n\n"
+      end
 
       if @options[:compare_link] && older_tag_name
         # Generate compare link

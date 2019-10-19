@@ -24,6 +24,16 @@ module GitHubChangelogGenerator
       puts "Fetching tags dates: #{i}/#{tags.count}" if options[:verbose]
     end
 
+    def fetch_tags_details(tags)
+      print "Fetching tag details...\r" if options[:verbose]
+      i = 0
+      tags.each do |tag|
+        get_detail_of_tag(tag)
+        i += 1
+      end
+      puts "Fetching tags details: #{i}/#{tags.count}" if options[:verbose]
+    end
+
     # Find correct closed dates, if issues was closed by commits
     def detect_actual_closed_dates(issues)
       print "Fetching closed dates for issues...\r" if options[:verbose]

@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require "github_changelog_generator/octo_fetcher"
-require "github_changelog_generator/generator/generator_fetcher"
-require "github_changelog_generator/generator/generator_processor"
-require "github_changelog_generator/generator/generator_tags"
-require "github_changelog_generator/generator/entry"
-require "github_changelog_generator/generator/section"
+require_relative "../octo_fetcher"
+require_relative "../generator/generator_fetcher"
+require_relative "../generator/generator_processor"
+require_relative "../generator/generator_tags"
+require_relative "../generator/entry"
+require_relative "../generator/section"
 
 module GitHubChangelogGenerator
   # Default error for ChangelogGenerator
@@ -34,8 +34,9 @@ module GitHubChangelogGenerator
     def initialize(options = {})
       @options        = options
       @tag_times_hash = {}
-      @fetcher        = GitHubChangelogGenerator::OctoFetcher.new(options)
-      @sections       = []
+      @tag_details_hash = {}
+      @fetcher = GitHubChangelogGenerator::OctoFetcher.new(options)
+      @sections = []
     end
 
     # Main function to start changelog generation
@@ -89,7 +90,10 @@ module GitHubChangelogGenerator
           older_tag["name"]
         end
 
-      Entry.new(options).generate_entry_for_tag(filtered_pull_requests, filtered_issues, newer_tag_name, newer_tag_link, newer_tag_time, older_tag_name)
+      description = @tag_details_hash[newer_tag_name]
+      newer_tag_desc = description.nil? ? "" : description["message"]
+
+      Entry.new(options).generate_entry_for_tag(filtered_pull_requests, filtered_issues, newer_tag_name, newer_tag_link, newer_tag_time, newer_tag_desc, older_tag_name)
     end
 
     # Filters issues and pull requests based on, respectively, `actual_date`

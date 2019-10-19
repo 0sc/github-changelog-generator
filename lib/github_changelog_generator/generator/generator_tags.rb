@@ -9,9 +9,9 @@ module GitHubChangelogGenerator
 
       all_tags = @fetcher.get_all_tags
       fetch_tags_dates(all_tags) # Creates a Hash @tag_times_hash
+      fetch_tags_details(all_tags) # Creates a Hash @tag_releases_hash
       all_sorted_tags = sort_tags_by_date(all_tags)
-
-      @sorted_tags   = filter_excluded_tags(all_sorted_tags)
+      @sorted_tags = filter_excluded_tags(all_sorted_tags)
       @filtered_tags = get_filtered_tags(@sorted_tags)
 
       # Because we need to properly create compare links, we need a sorted list
@@ -74,6 +74,25 @@ module GitHubChangelogGenerator
 
       @fetcher.fetch_date_of_tag(tag_name).tap do |time_string|
         @tag_times_hash[name_of_tag] = time_string
+      end
+    end
+
+    # Returns associated details for given GitHub Tag hash
+    #
+    # Memoize the details by tag name.
+    #
+    # @param [Hash] tag
+    #
+    # @return [Hash] Github Tag
+    def get_detail_of_tag(tag)
+      raise ChangelogGeneratorError, "tag is nil" if tag.nil?
+
+      name_of_tag = tag.fetch("name")
+      detail_for_tag_name = @tag_details_hash[name_of_tag]
+      return detail_for_tag_name if detail_for_tag_name
+
+      @fetcher.fetch_detail_of_tag(tag).tap do |detail|
+        @tag_details_hash[name_of_tag] = detail unless detail.empty?
       end
     end
 
